@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import fetchImagesOnQuery from 'services/api';
@@ -7,89 +7,92 @@ import ImageGallery from './ImageGallery';
 import Button from './Button';
 import Loader from './Loader';
 
-export class App extends Component {
-  state = {
-    query: '',
-    pictures: [],
-    page: 1,
-    error: null,
-    isLoading: false,
-  };
+export function App() {
+  const [query, setQuery] = useState('');
+  const [pictures, setPictures] = useState([]);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.uploadImages();
-    }
-  }
+  useEffect(() => {
+    if (!query) return;
 
-  async uploadImages() {
-    this.setState({ isLoading: true });
+    const fetchImages = async () => {
+      setIsLoading(true);
 
-    try {
-      // const { totalHits, hits } = await fetchImagesOnQuery(
-      //   this.state.query,
-      //   this.state.page
-      // );
-      const responseApi = await fetchImagesOnQuery(
-        this.state.query,
-        this.state.page
-      );
+      try {
+        const response = await fetchImagesOnQuery(query, page);
 
-      if (!responseApi.totalHits) {
-        toast.error(
-          `Ooops... Sorry!!! Nothing was found for query: "${this.state.query}"`
-        );
-        throw new Error('No data :-(');
-      }
-
-      const selectedProperties = responseApi.hits.map(
-        ({ id, webformatURL, largeImageURL, tags }) => {
-          return { id, webformatURL, largeImageURL, tags };
+        if (!response.totalHits) {
+          throw new Error('No data :-(');
         }
-      );
 
-      // Оновлення масиву зображень (необхідно при настиканні кнопки Load more)
-      this.setState(prevState => ({
-        pictures: [...prevState.pictures, ...selectedProperties],
-      }));
-    } catch (error) {
-      this.setState({ error });
-    } finally {
-      this.setState({ isLoading: false });
+        const selectedProperties = response.hits.map(
+          ({ id, webformatURL, largeImageURL, tags }) => {
+            return { id, webformatURL, largeImageURL, tags };
+          }
+        );
+
+        // Оновлення масиву зображень (необхідно при настиканні кнопки Load more)
+        setPictures(prevPictures => [...prevPictures, ...selectedProperties]);
+      } catch (error) {
+        setError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchImages();
+  }, [query, page]);
+
+  useEffect(() => {
+    if (error) {
+      // Можна додати код для обробки помилок, якщо необхідно
+      // console.error('Error:', error);
+      toast.error('Ooops... Sorry!!! Nothing was found for your query!');
     }
-  }
+  }, [error]);
 
   // Оновити state App за пошуковим запитом
-  handleFormSubmit = searchQuery => {
-    if (this.state.query !== searchQuery) {
-      this.setState({ query: searchQuery, pictures: [], page: 1 });
+  const handleFormSubmit = searchQuery => {
+    if (query !== searchQuery) {
+      resetState();
+      setQuery(searchQuery);
     }
+  };
+
+  const resetState = () => {
+    setQuery('');
+    setPictures([]);
+    setPage(1);
+    setError(null);
   };
 
   // Завантажити наступну сторінку картинок
-  handleLoadMore = () => {
-    this.setState(prevState => {
-      return { page: prevState.page + 1 };
-    });
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  render() {
-    const { query, pictures, page, isLoading } = this.state;
-    const isShowGallery = pictures.length > 0 && query;
-    const isShowButton = isShowGallery && !isLoading && !(pictures.length % 12);
+  const isShowGallery = pictures.length > 0 && query;
+  const isShowButton = isShowGallery && !isLoading && !(pictures.length % 12);
+  // const errorMessage = error
+  //   ? `Ooops... Sorry!!! Nothing was found for query: "${query}"`
+  //   : null;
 
-    return (
-      <>
-        <Searchbar onSubmit={this.handleFormSubmit} />
-        {isShowGallery && <ImageGallery pictures={pictures} page={page} />}
-        {isShowButton && <Button onClick={this.handleLoadMore} />}
-        {isLoading && <Loader />}
+  return (
+    <>
+      <Searchbar onSubmit={handleFormSubmit} />
+      {isShowGallery && <ImageGallery pictures={pictures} page={page} />}
+      {isShowButton && <Button onClick={handleLoadMore} />}
+      {isLoading && <Loader />}
 
-        <ToastContainer autoClose={2500} position="top-center" />
-      </>
-    );
-  }
+      {/* {error && (
+        <div>
+          {errorMessage}
+        </div>
+      )} */}
+
+      <ToastContainer autoClose={2000} position="top-center" theme="colored" />
+    </>
+  );
 }
