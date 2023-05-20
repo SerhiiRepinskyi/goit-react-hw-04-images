@@ -82,7 +82,7 @@ export function App() {
   return (
     <>
       <Searchbar onSubmit={handleFormSubmit} />
-      {isShowGallery && <ImageGallery pictures={pictures} page={page} />}
+      {isShowGallery && <ImageGallery pictures={pictures} />}
       {isShowButton && <Button onClick={handleLoadMore} />}
       {isLoading && <Loader />}
 
