@@ -47,8 +47,8 @@ export function App() {
 
   useEffect(() => {
     if (error) {
-      // Можна додати код для обробки помилок, якщо необхідно
       // console.error('Error:', error);
+      // Код для обробки помилок
       toast.error('Ooops... Sorry!!! Nothing was found for your query!');
     }
   }, [error]);
