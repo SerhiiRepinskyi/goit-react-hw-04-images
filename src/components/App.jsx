@@ -6,6 +6,7 @@ import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
 import Button from './Button';
 import Loader from './Loader';
+import css from './App.module.css';
 
 export function App() {
   const [query, setQuery] = useState('');
@@ -80,7 +81,7 @@ export function App() {
   //   : null;
 
   return (
-    <>
+    <div className={css.app}>
       <Searchbar onSubmit={handleFormSubmit} />
       {isShowGallery && <ImageGallery pictures={pictures} />}
       {isShowButton && <Button onClick={handleLoadMore} />}
@@ -93,6 +94,6 @@ export function App() {
       )} */}
 
       <ToastContainer autoClose={2000} position="top-center" theme="colored" />
-    </>
+    </div>
   );
 }
