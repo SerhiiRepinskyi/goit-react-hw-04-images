@@ -17,34 +17,30 @@ export function App() {
 
   useEffect(() => {
     if (!query) return;
-
-    const fetchImages = async () => {
-      setIsLoading(true);
-
-      try {
-        const response = await fetchImagesOnQuery(query, page);
-
-        if (!response.totalHits) {
-          throw new Error('No data :-(');
-        }
-
-        const selectedProperties = response.hits.map(
-          ({ id, webformatURL, largeImageURL, tags }) => {
-            return { id, webformatURL, largeImageURL, tags };
-          }
-        );
-
-        // Оновлення масиву зображень (необхідно при настиканні кнопки Load more)
-        setPictures(prevPictures => [...prevPictures, ...selectedProperties]);
-      } catch (error) {
-        setError(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchImages();
+    fetchImages(query, page);
   }, [query, page]);
+
+  const fetchImages = async (query, page) => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetchImagesOnQuery(query, page);
+      if (!response.totalHits) {
+        throw new Error('No data :-(');
+      }
+      const selectedProperties = response.hits.map(
+        ({ id, webformatURL, largeImageURL, tags }) => {
+          return { id, webformatURL, largeImageURL, tags };
+        }
+      );
+      // Оновлення масиву зображень (необхідно при настиканні кнопки Load more)
+      setPictures(prevPictures => [...prevPictures, ...selectedProperties]);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (error) {
