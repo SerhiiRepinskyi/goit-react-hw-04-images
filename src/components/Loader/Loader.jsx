@@ -3,7 +3,7 @@ import css from './Loader.module.css';
 
 export default function Loader() {
   return (
-    <div className={css.overlay}>
+    <div className={css.loaderContainer}>
       <RotatingLines
         strokeColor="grey"
         strokeWidth="5"
@@ -11,7 +11,6 @@ export default function Loader() {
         width="96"
         visible={true}
       />
-      ;
     </div>
   );
 }
